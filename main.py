@@ -1,18 +1,22 @@
 import asyncio
 import random
 from aiogram import Bot, Dispatcher, types
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.filters import CommandStart
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 TOKEN = "8689457761:AAF3yVUbP29Am8ag-LEw9SCnwSQr6V7LkJ4"
 
-# Твой Telegram ID (или ID группы/канала), куда бот будет слать сообщения
+# Твой Telegram ID
 USER_ID = 5216014080
 
-bot = Bot(token=TOKEN)
+# Подключаем прокси для бесплатных серверов PythonAnywhere
+session = AiohttpSession(proxy="http://proxy.server:3128")
+bot = Bot(token=TOKEN, session=session)
+
 dp = Dispatcher()
 
-# Список из 10 сообщений
+# Список сообщений
 MESSAGES = [
     "лю тя ❤️",
     "все еще оч лю тя 💕",
@@ -27,7 +31,7 @@ MESSAGES = [
 ]
 
 
-# Функция, которая будет вызываться каждый день по расписанию
+# Функция отправки ежедневного сообщения
 async def send_daily_message():
     message_to_send = random.choice(MESSAGES)
     try:
@@ -39,18 +43,14 @@ async def send_daily_message():
 
 @dp.message(CommandStart())
 async def cmd_start(message: types.Message):
-    await message.answer(
-        f""
-        "прив",
-        parse_mode="Markdown",
-    )
+    await message.answer("прив")
 
 
 async def main():
-    # Настраиваем планировщик задач
+    # Планировщик отправки
     scheduler = AsyncIOScheduler(timezone="Europe/Kyiv")
 
-    # Указываем время запуска (например, каждый день в 09:00 утра)
+    # Каждый день в 12:00 по Киеву
     scheduler.add_job(send_daily_message, "cron", hour=12, minute=0)
     scheduler.start()
 
